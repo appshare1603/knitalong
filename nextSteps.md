@@ -32,7 +32,7 @@ Rückmeldungen zu Verständlichkeit, Raumwahl und gewünschter Nutzung sammeln.
 
 Das Datenbankpasswort und der `service_role`-Key dürfen nicht in GitHub, in `NEXT_PUBLIC_`-Variablen oder in den Chat gelangen. Für den ersten Test genügt ein einzelnes Supabase-Projekt. Vor der echten Datenmodellierung sollten wir festlegen, ob Entwicklungs- und Testdaten getrennt werden.
 
-Hinweis zur Berechtigung: Zusätzlich zu RLS benötigt PostgreSQL Tabellenrechte. Falls beim Profilabruf `42501` erscheint, führe `supabase/migrations/003_profile_grants.sql` im SQL Editor aus. Die Migration gibt der Rolle `authenticated` nur `select`, `insert` und `update` auf `profiles`.
+Hinweis zur Berechtigung: Zusätzlich zu RLS benötigt PostgreSQL Tabellenrechte. Falls beim Profilabruf `42501` erscheint, führe `supabase/migrations/003_profile_grants.sql` im SQL Editor aus. Die Migration gibt der Rolle `authenticated` nur `select`, `insert` und `update` auf `profiles`. Für die öffentliche Raumübersicht führe zusätzlich `supabase/migrations/004_rooms_public_grant.sql` aus; diese gibt `anon` ausschließlich Leserechte auf öffentliche Raumdaten.
 
 ### Punkt 2: Lokale Umgebung
 
