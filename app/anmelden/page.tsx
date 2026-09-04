@@ -58,8 +58,11 @@ export default function SignInPage() {
 
     void restoreSession();
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) void loadProfile(session.user.id);
-      else setProfile(null);
+      if (session) {
+        setTimeout(() => void loadProfile(session.user.id), 0);
+      } else {
+        setProfile(null);
+      }
     });
 
     return () => {
