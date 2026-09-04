@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RoomExperience from "./RoomExperience";
 
 const rooms: Record<string, { title: string; detail: string; people: string; accent: string }> = {
   "leise-maschen": { title: "Leise Maschen am Abend", detail: "Gemeinsam stricken, wenig reden", people: "4 aktiv · 11 dabei", accent: "sage" },
@@ -27,10 +28,7 @@ export default async function RoomPage({ params }: { params: Promise<{ slug: str
           <div className="stage-actions"><a className="button button-dark" href="#preview">Als Zuschauer ansehen <span aria-hidden="true">↗</span></a><Link className="text-link" href="/">Zurück zu allen Räumen</Link></div>
         </div>
       </section>
-      <section className="room-preview" id="preview">
-        <div className="preview-header"><div><p className="eyebrow">Raumvorschau</p><h2>Hier wird zusammen gestrickt.</h2></div><span className="preview-badge">Noch ohne LiveKit</span></div>
-        <div className="preview-grid"><div className="preview-tile tile-one"><span>MK</span><small>Hände-Ansicht</small></div><div className="preview-tile tile-two"><span>LS</span><small>Nur dabei</small></div><div className="preview-tile tile-three"><span>Du</span><small>Kamera aus</small></div></div>
-      </section>
+      <RoomExperience title={room.title} detail={room.detail} people={room.people} />
       <footer><span>KnitAlong</span><span>Prototyp · keine Aufzeichnung</span></footer>
     </main>
   );
