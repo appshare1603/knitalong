@@ -26,7 +26,7 @@ export default function SignInPage() {
     }
 
     if (result.error) {
-      setError(`Dein Konto ist aktiv, aber das Profil konnte nicht geladen werden (${result.error.code}). Prüfe die RLS-Regel und die Vercel-Umgebungsvariablen.`);
+      setError(`Profilabfrage fehlgeschlagen (${result.error.code}): ${result.error.message}${result.error.details ? ` Details: ${result.error.details}` : ""}`);
       return;
     }
 
