@@ -19,14 +19,14 @@ export default function SignInPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
 
   const loadProfile = useCallback(async (userId: string) => {
-    const result = await supabase.from("profiles").select("display_name, language, age_confirmed").eq("id", userId).single();
-    if (!result.error) {
+    const result = await supabase.from("profiles").select("display_name, language, age_confirmed").eq("id", userId).maybeSingle();
+    if (!result.error && result.data) {
       setProfile(result.data);
       return;
     }
 
-    if (result.error.code !== "PGRST116") {
-      setError("Dein Konto ist aktiv, aber das Profil konnte nicht geladen werden.");
+    if (result.error) {
+      setError(`Dein Konto ist aktiv, aber das Profil konnte nicht geladen werden (${result.error.code}). Prüfe die RLS-Regel und die Vercel-Umgebungsvariablen.`);
       return;
     }
 
