@@ -1,0 +1,11 @@
+Dein dreiphasiger Ansatz ist strategisch klug gewählt. Zuerst die kritische Masse an aktiven Nutzern aufzubauen, bevor Hürden wie Bezahlschranken eingeführt werden, passt perfekt zur Dynamik einer Community-Plattform.
+
+Ergänzend zu deinen Phasen bieten sich folgende zusätzliche Monetarisierungsansätze an, die direkt an das Live- und Handarbeits-Setting anknüpfen:
+
+* **Spezifische Subscription-Modelle (Freemium / Premium-Funktionen):** Während das Basis-Wohnzimmer kostenlos bleibt, zahlen Power-User für exklusive Komfort-Features – wie z. B. unbegrenzte Raumgrößen für eigene Strick-Treffs, erweiterte Filter (z. B. spezielle Makro-Modi für Maschen-Details), die Möglichkeit, eigene Räume dauerhaft ganz oben zu pinnen, oder erweiterte Videoaufzeichnung/Storage für eigene Tutorials.
+* **Virtuelles Trinkgeld & In-App-Währung ("KnitCoins" / Maschen-Spenden):** Zuschauer können Erstellern von Anleitungen oder erfahreneren Stickern, die im Live-Stream Hilfe leisten, digitale Wertmarken schicken. Die App behält eine kleine Transaktionsgebühr (z. B. 15–30 %) ein.
+* **Affiliate-Links & Material-Matching:** Ein Live-Streamer zeigt ein bestimmtes Garn oder ein Stricknadel-Set. Die App verlinkt das exakte Material direkt im Video-Feed. Kauft ein Zuschauer über diesen Link bei Partner-Shops, erhält die App eine Provision.
+* **Exklusive Masterclasses & VIP-Räume:** Bekannte Designer oder Influencer der Szene veranstalten gebührenpflichtige Live-Workshops (z. B. "Socken stricken für Anfänger" oder "Komplexe Zopfmuster"). Die Plattform wickelt das Ticketing ab und nimmt eine Beteiligung.
+* **Digitale Anleitungs-Schnittstelle:** Statt nur eines physischen Marktplatzes für fertige Werke bietet sich ein direkter Marktplatz für digitale Anleitungen (PDFs) an. Beim Erstellen eines Raums kann der Hoster angeben: *"In diesem Raum stricken wir Pullover X"* mit direktem Kaufbutton für die passende Anleitung.
+
+Möchtest du als Nächstes die genauen technischen Anforderungen für die erste Testversion (MVP) definieren oder lieber das Thema Datenschutz und Standortkarte vertiefen?
