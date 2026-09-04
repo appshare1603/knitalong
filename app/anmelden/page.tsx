@@ -20,8 +20,32 @@ export default function SignInPage() {
 
   const loadProfile = useCallback(async (userId: string) => {
     const result = await supabase.from("profiles").select("display_name, language, age_confirmed").eq("id", userId).single();
-    if (result.error) setError("Dein Konto ist aktiv, aber das Profil konnte nicht geladen werden.");
-    else setProfile(result.data);
+    if (!result.error) {
+      setProfile(result.data);
+      return;
+    }
+
+    if (result.error.code !== "PGRST116") {
+      setError("Dein Konto ist aktiv, aber das Profil konnte nicht geladen werden.");
+      return;
+    }
+
+    const userResult = await supabase.auth.getUser();
+    const user = userResult.data.user;
+    const metadata = user?.user_metadata;
+    if (!user || metadata?.age_confirmed !== true) {
+      setError("Dein Konto ist aktiv, aber es fehlt die bestätigte Altersangabe im Profil. Bitte registriere dich erneut.");
+      return;
+    }
+
+    const repair = await supabase.from("profiles").insert({
+      id: user.id,
+      display_name: typeof metadata.display_name === "string" && metadata.display_name.trim() ? metadata.display_name.trim() : "KnitAlong Nutzer",
+      age_confirmed: true,
+      language: metadata.language === "en" ? "en" : "de",
+    }).select("display_name, language, age_confirmed").single();
+    if (repair.error) setError("Dein Konto ist aktiv, aber das Profil konnte nicht angelegt werden.");
+    else setProfile(repair.data);
   }, []);
 
   useEffect(() => {
