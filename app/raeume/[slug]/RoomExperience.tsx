@@ -18,7 +18,7 @@ export default function RoomExperience({ slug, title, detail, people }: RoomExpe
   const [activeParticipant, setActiveParticipant] = useState(false);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState(["Anna: Schön, dass du da bist!", "Lisa: Ich bin gerade an der Ferse."]);
-
+//
   function sendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedMessage = message.trim();
@@ -39,7 +39,7 @@ export default function RoomExperience({ slug, title, detail, people }: RoomExpe
 
     const roomResult = await supabase.from("rooms").select("id").eq("slug", slug).single();
     if (roomResult.error) {
-      setJoinError("Der Raum konnte nicht gefunden werden.");
+      setJoinError(`Raumabfrage fehlgeschlagen für „${slug}“ (${roomResult.error.code}): ${roomResult.error.message}`);
       setJoining(false);
       return;
     }
