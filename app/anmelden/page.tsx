@@ -12,6 +12,7 @@ export default function SignInPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isAdult, setIsAdult] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -116,7 +117,7 @@ export default function SignInPage() {
           <div className="form-heading"><span className="form-step">01 / 01</span><h2>{mode === "signup" ? "Konto erstellen" : "Willkommen zurück"}</h2></div>
           {mode === "signup" && <><label htmlFor="name">Wie dürfen wir dich nennen?</label><input id="name" name="name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Dein Anzeigename" autoComplete="nickname" required /></>}
           <label htmlFor="email">E-Mail-Adresse</label><input id="email" name="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="du@beispiel.de" autoComplete="email" required />
-          <label htmlFor="password">Passwort</label><input id="password" name="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Mindestens 6 Zeichen" minLength={6} autoComplete={mode === "signup" ? "new-password" : "current-password"} required />
+          <label htmlFor="password">Passwort</label><div className="password-field"><input id="password" name="password" type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Mindestens 6 Zeichen" minLength={6} autoComplete={mode === "signup" ? "new-password" : "current-password"} required /><button className="password-toggle" type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? "Passwort verbergen" : "Passwort anzeigen"} aria-pressed={showPassword}>{showPassword ? "Verbergen" : "Anzeigen"}</button></div>
           {mode === "signup" && <label className="check-row"><input type="checkbox" checked={isAdult} onChange={(event) => setIsAdult(event.target.checked)} required /><span>Ich bin mindestens 16 Jahre alt.</span></label>}
           {error && <p className="form-message form-error" role="alert">{error}</p>}
           {message && <p className="form-message form-success" role="status">{message}</p>}

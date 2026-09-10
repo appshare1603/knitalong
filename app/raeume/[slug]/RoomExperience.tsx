@@ -46,7 +46,7 @@ export default function RoomExperience({ slug, title, detail, people }: RoomExpe
 
     const membershipResult = await supabase.from("room_members").upsert({ room_id: roomResult.data.id, user_id: userData.user.id, mode: "viewer", left_at: null }, { onConflict: "room_id,user_id" });
     if (membershipResult.error) {
-      setJoinError(`Der Beitritt konnte nicht gespeichert werden (${membershipResult.error.code}).`);
+      setJoinError(`Der Beitritt konnte nicht gespeichert werden (${membershipResult.error.code}): ${membershipResult.error.message}`);
     } else {
       setPersisted(true);
       setJoined(true);
