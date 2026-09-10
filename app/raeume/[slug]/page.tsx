@@ -28,7 +28,7 @@ export default async function RoomPage({ params }: { params: Promise<{ slug: str
           <div className="stage-actions"><a className="button button-dark" href="#preview">Als Zuschauer ansehen <span aria-hidden="true">↗</span></a><Link className="text-link" href="/">Zurück zu allen Räumen</Link></div>
         </div>
       </section>
-      <RoomExperience title={room.title} detail={room.detail} people={room.people} />
+      <RoomExperience slug={slug} title={room.title} detail={room.detail} people={room.people} />
       <footer><span>KnitAlong</span><span>Prototyp · keine Aufzeichnung</span></footer>
     </main>
   );

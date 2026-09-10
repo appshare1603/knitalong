@@ -56,3 +56,7 @@ Die Migration liegt unter `supabase/migrations/001_profiles.sql`. Führe sie so 
 6. Prüfe unter **Authentication → Users**, ob ein Testkonto angelegt werden kann.
 
 Die Migration aktiviert Row-Level Security, erlaubt authentifizierten Nutzern das Lesen von Profilen und beschränkt Anlegen bzw. Ändern auf das jeweils eigene Profil. Neue Auth-Nutzer erhalten automatisch ein Profil aus den Registrierungsdaten. Punkt 4 wird erst nach erfolgreicher Ausführung im Dashboard mit `[x]` markiert.
+
+### Punkt 7: Raumbeitritte
+
+Die Migration `supabase/migrations/005_room_members.sql` legt `room_members` an und gibt authentifizierten Nutzern Rechte für ihre eigenen Beitritte. Führe sie im Supabase SQL Editor aus. Danach kann ein angemeldeter Nutzer beim Betreten eines Raums als Zuschauer gespeichert werden; beim Verlassen wird `left_at` gesetzt. Nicht angemeldete Besucher bleiben im lokalen Demo-Modus.
