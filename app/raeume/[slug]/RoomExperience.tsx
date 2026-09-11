@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 
 type RoomExperienceProps = {
@@ -10,6 +10,8 @@ type RoomExperienceProps = {
   people: string;
 };
 
+type ChatMessage = { id: string; user_id: string; content: string; created_at: string };
+
 export default function RoomExperience({ slug, title, detail, people }: RoomExperienceProps) {
   const [joined, setJoined] = useState(false);
   const [joining, setJoining] = useState(false);
@@ -17,14 +19,40 @@ export default function RoomExperience({ slug, title, detail, people }: RoomExpe
   const [joinError, setJoinError] = useState("");
   const [activeParticipant, setActiveParticipant] = useState(false);
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState(["Anna: Schön, dass du da bist!", "Lisa: Ich bin gerade an der Ferse."]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [roomId, setRoomId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [chatError, setChatError] = useState("");
+
+  useEffect(() => {
+    if (!joined || !roomId || !userId) return;
+    let active = true;
+
+    async function loadMessages() {
+      const result = await supabase.from("messages").select("id, user_id, content, created_at").eq("room_id", roomId).order("created_at", { ascending: true }).limit(100);
+      if (active && result.error) setChatError(`Chat konnte nicht geladen werden (${result.error.code}): ${result.error.message}`);
+      else if (active) setMessages((result.data ?? []) as ChatMessage[]);
+    }
+
+    void loadMessages();
+    const channel = supabase.channel(`room-messages-${roomId}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `room_id=eq.${roomId}` }, (payload) => {
+      if (active) setMessages((current) => current.some((item) => item.id === payload.new.id) ? current : [...current, payload.new as ChatMessage]);
+    }).subscribe();
+
+    return () => {
+      active = false;
+      void supabase.removeChannel(channel);
+    };
+  }, [joined, roomId, userId]);
 //
-  function sendMessage(event: FormEvent<HTMLFormElement>) {
+  async function sendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedMessage = message.trim();
     if (!trimmedMessage) return;
-    setMessages((currentMessages) => [...currentMessages, `Du: ${trimmedMessage}`]);
-    setMessage("");
+    if (!userId || !roomId) return;
+    const result = await supabase.from("messages").insert({ room_id: roomId, user_id: userId, content: trimmedMessage });
+    if (result.error) setChatError(`Nachricht konnte nicht gesendet werden (${result.error.code}): ${result.error.message}`);
+    else setMessage("");
   }
 
   async function joinRoom() {
@@ -48,6 +76,8 @@ export default function RoomExperience({ slug, title, detail, people }: RoomExpe
     if (membershipResult.error) {
       setJoinError(`Der Beitritt konnte nicht gespeichert werden (${membershipResult.error.code}): ${membershipResult.error.message}`);
     } else {
+      setRoomId(roomResult.data.id);
+      setUserId(userData.user.id);
       setPersisted(true);
       setJoined(true);
     }
@@ -62,6 +92,8 @@ export default function RoomExperience({ slug, title, detail, people }: RoomExpe
     }
     setJoined(false);
     setPersisted(false);
+    setRoomId(null);
+    setMessages([]);
   }
 
   if (joined) {
@@ -69,7 +101,7 @@ export default function RoomExperience({ slug, title, detail, people }: RoomExpe
       <section className="joined-room" id="preview" aria-live="polite">
         <div className="joined-header"><div><p className="eyebrow">Du bist dabei</p><h2>{title}</h2></div><span className="preview-badge">Zuschauer-Modus</span></div>
         <div className="joined-status"><span className="status-check" aria-hidden="true">✓</span><div><strong>{activeParticipant ? "Du nimmst aktiv teil." : "Willkommen im Raum."}</strong><p>{activeParticipant ? "Deine Kamera und dein Mikrofon sind weiterhin aus. LiveKit folgt im nächsten Schritt." : "Du bist als Zuschauer dabei. Du kannst jederzeit selbst aktiv werden."}</p></div><button className="text-button mode-button" type="button" onClick={() => setActiveParticipant((current) => !current)}>{activeParticipant ? "Zuschauer werden" : "Aktiv teilnehmen"}</button></div>
-        <div className="room-tools"><div className="preview-grid"><div className="preview-tile tile-one"><span>MK</span><small>Hände-Ansicht</small></div><div className="preview-tile tile-two"><span>LS</span><small>Nur dabei</small></div><div className={`preview-tile tile-three tile-you ${activeParticipant ? "tile-active" : ""}`}><span>Du</span><small>{activeParticipant ? "Teilnehmer" : "Kamera aus"}</small></div></div><aside className="chat-panel"><div className="chat-heading"><div><p className="eyebrow">Raumchat</p><strong>Leise Nachrichten</strong></div><span>{messages.length} Nachrichten</span></div><div className="chat-messages">{messages.map((chatMessage, index) => <p key={`${chatMessage}-${index}`}>{chatMessage}</p>)}</div><form className="chat-form" onSubmit={sendMessage}><input aria-label="Nachricht schreiben" value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Nachricht schreiben ..." /><button type="submit" aria-label="Nachricht senden">→</button></form></aside></div>
+        <div className="room-tools"><div className="preview-grid"><div className="preview-tile tile-one"><span>MK</span><small>Hände-Ansicht</small></div><div className="preview-tile tile-two"><span>LS</span><small>Nur dabei</small></div><div className={`preview-tile tile-three tile-you ${activeParticipant ? "tile-active" : ""}`}><span>Du</span><small>{activeParticipant ? "Teilnehmer" : "Kamera aus"}</small></div></div><aside className="chat-panel"><div className="chat-heading"><div><p className="eyebrow">Raumchat</p><strong>Leise Nachrichten</strong></div><span>{messages.length} Nachrichten</span></div><div className="chat-messages">{messages.map((chatMessage) => <p key={chatMessage.id}><strong>{chatMessage.user_id === userId ? "Du" : "Mitglied"}:</strong> {chatMessage.content}</p>)}</div>{chatError && <p className="form-message form-error" role="alert">{chatError}</p>}<form className="chat-form" onSubmit={sendMessage}><input aria-label="Nachricht schreiben" value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Nachricht schreiben ..." /><button type="submit" aria-label="Nachricht senden">→</button></form></aside></div>
         <div className="joined-footer"><span>{people} · jetzt mit dir{persisted ? " · gespeichert" : " · Demo"}</span><button className="text-button" type="button" onClick={leaveRoom}>Raum verlassen</button></div>
       </section>
     );

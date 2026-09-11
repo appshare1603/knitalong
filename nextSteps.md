@@ -34,6 +34,8 @@ Das Datenbankpasswort und der `service_role`-Key dürfen nicht in GitHub, in `NE
 
 Hinweis zur Berechtigung: Zusätzlich zu RLS benötigt PostgreSQL Tabellenrechte. Falls beim Profilabruf `42501` erscheint, führe `supabase/migrations/003_profile_grants.sql` im SQL Editor aus. Die Migration gibt der Rolle `authenticated` nur `select`, `insert` und `update` auf `profiles`. Für die öffentliche Raumübersicht führe zusätzlich `supabase/migrations/004_rooms_public_grant.sql` aus; diese gibt `anon` ausschließlich Leserechte auf öffentliche Raumdaten.
 
+Für angemeldete Nutzer muss zusätzlich `supabase/migrations/006_rooms_authenticated_grant.sql` ausgeführt werden. Sie gibt `authenticated` ausschließlich Leserechte auf `rooms`.
+
 ### Punkt 2: Lokale Umgebung
 
 - [x] `.env.example` als sichere Variablenvorlage angelegt
@@ -60,3 +62,7 @@ Die Migration aktiviert Row-Level Security, erlaubt authentifizierten Nutzern da
 ### Punkt 7: Raumbeitritte
 
 Die Migration `supabase/migrations/005_room_members.sql` legt `room_members` an und gibt authentifizierten Nutzern Rechte für ihre eigenen Beitritte. Führe sie im Supabase SQL Editor aus. Danach kann ein angemeldeter Nutzer beim Betreten eines Raums als Zuschauer gespeichert werden; beim Verlassen wird `left_at` gesetzt. Nicht angemeldete Besucher bleiben im lokalen Demo-Modus.
+
+### Punkt 8: Chat mit Supabase Realtime
+
+Die Migration `supabase/migrations/008_messages.sql` legt `messages` an, aktiviert RLS und registriert die Tabelle für Supabase Realtime. Führe sie im Supabase SQL Editor aus. Danach werden Chatnachrichten für aktive Raumteilnehmer geladen, gespeichert und live an weitere Teilnehmer verteilt. Nicht angemeldete Besucher können weiterhin nur den lokalen Demo-Raum sehen.
