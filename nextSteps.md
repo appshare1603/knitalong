@@ -16,7 +16,7 @@ Rückmeldungen zu Verständlichkeit, Raumwahl und gewünschter Nutzung sammeln.
 6. [x] Räume aus Supabase laden
 7. [ ] Raumbeitritte speichern
 8. [ ] Chat mit Supabase Realtime anbinden
-9. [ ] Blockieren und Melden ergänzen
+9. [ ] Blockieren und Melden ergänzen (spätere Phase)
 10. [ ] LiveKit integrieren
 
 ### Start mit Punkt 1
@@ -66,3 +66,31 @@ Die Migration `supabase/migrations/005_room_members.sql` legt `room_members` an 
 ### Punkt 8: Chat mit Supabase Realtime
 
 Die Migration `supabase/migrations/008_messages.sql` legt `messages` an, aktiviert RLS und registriert die Tabelle für Supabase Realtime. Führe sie im Supabase SQL Editor aus. Danach werden Chatnachrichten für aktive Raumteilnehmer geladen, gespeichert und live an weitere Teilnehmer verteilt. Nicht angemeldete Besucher können weiterhin nur den lokalen Demo-Raum sehen.
+
+### LiveKit-Konfiguration
+
+Für die lokale Entwicklung werden drei Variablen benötigt. Die Server-URL darf öffentlich verwendet werden; API-Key und besonders API-Secret bleiben geheim:
+
+```env
+NEXT_PUBLIC_LIVEKIT_URL=wss://dein-projekt.livekit.cloud
+LIVEKIT_API_KEY=dein-api-key
+LIVEKIT_API_SECRET=dein-api-secret
+```
+
+Die Werte gehören zusätzlich in Vercel unter **Settings → Environment Variables** für Preview und Production. `LIVEKIT_API_SECRET` darf niemals mit `NEXT_PUBLIC_` beginnen.
+
+LiveKit-Einrichtung:
+- [x] LiveKit-Cloud-Projekt angelegt
+- [x] Server-URL im Dashboard gefunden
+- [ ] Server-URL in `.env.local` eintragen
+- [ ] API-Key und API-Secret im LiveKit-Dashboard erstellen und lokal eintragen
+- [ ] Dieselben drei Variablen in Vercel für Preview und Production setzen
+- [x] Serverseitigen Token-Endpunkt implementieren; er prüft Login und aktiven Raumbeitritt
+- [x] Browser-Client und Video-Grid implementieren; Kamera und Mikrofon starten aus
+- [ ] Credentials lokal und in Vercel testen, danach Zwei-Nutzer-Test durchführen
+
+Die lokalen Variablen stehen bereits leer in `.env.local`. Fülle sie dort direkt im Editor aus. Im LiveKit-Dashboard findest du den API-Key und das Secret in den Projekt-Einstellungen unter **Keys**. Hinterlege dieselben Namen in Vercel unter **Settings → Environment Variables** für Preview und Production und löse danach einen Redeploy aus. Das API-Secret niemals in den Chat oder in Git einfügen.
+
+### Zurückgestellt
+
+Punkt 9 (Blockieren und Melden) wird zunächst zurückgestellt. Er wird vor einem öffentlichen Betrieb benötigt und in einer späteren Phase als eigenes Moderations- und Sicherheitskonzept umgesetzt.
