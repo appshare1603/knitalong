@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LiveKitRoom, GridLayout, ParticipantTile, RoomAudioRenderer, TrackToggle, useTracks } from "@livekit/components-react";
+import { LiveKitRoom, RoomAudioRenderer, TrackToggle, VideoTrack, useConnectionState, useLocalParticipant, useTracks } from "@livekit/components-react";
 import { Track } from "livekit-client";
 import { supabase } from "@/lib/supabase/client";
 
@@ -9,11 +9,19 @@ type LiveKitRoomPanelProps = { slug: string; canPublish: boolean };
 type LiveKitTokenResponse = { token: string; serverUrl: string };
 
 function ConnectedRoom({ canPublish }: { canPublish: boolean }) {
-  const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }]);
+  const tracks = useTracks([Track.Source.Camera]);
+  const { isCameraEnabled, lastCameraError } = useLocalParticipant();
+  const connectionState = useConnectionState();
 
   return (
     <div className="livekit-connected">
-      <GridLayout tracks={tracks} className="livekit-grid"><ParticipantTile /></GridLayout>
+      <div className="livekit-connection-status" role="status">
+        LiveKit: {connectionState}{isCameraEnabled ? " · Kamera aktiv" : " · Kamera aus"}
+      </div>
+      {lastCameraError && <p className="form-message form-error" role="alert">Kamera konnte nicht gestartet werden: {lastCameraError.message}</p>}
+      <div className="livekit-grid">
+        {tracks.length ? tracks.map((track) => <div className="livekit-video-tile" key={`${track.participant.identity}-${track.publication.trackSid ?? track.source}`}><VideoTrack trackRef={track} /><span>{track.participant.name || track.participant.identity}</span></div>) : <div className="livekit-empty">Noch keine Kamera aktiv. Schalte deine Kamera ein oder warte auf weitere Teilnehmende.</div>}
+      </div>
       <RoomAudioRenderer />
       <div className="livekit-controls">
         <TrackToggle source={Track.Source.Microphone} disabled={!canPublish} title={canPublish ? "Mikrofon umschalten" : "Aktive Teilnahme einschalten, um das Mikrofon zu verwenden"} className="button button-dark">Mikrofon</TrackToggle>
