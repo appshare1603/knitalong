@@ -6,20 +6,20 @@ Chat-Oberfläche und Zuschauer-/Teilnehmerstatus darstellen. [x]
 Test mit 20 Personen durchführen.
 Rückmeldungen zu Verständlichkeit, Raumwahl und gewünschter Nutzung sammeln.
 
-## Supabase-Anbindung
+## Technischer Stand
 
-1. [ ] Supabase-Projekt anlegen
+1. [x] Supabase-Projekt anlegen
 2. [x] Lokale Entwicklungs- und Testumgebung definieren
 3. [x] Authentifizierung einrichten
 4. [x] `profiles`-Tabelle und Row-Level Security erstellen
 5. [x] Demo-Login durch echten Login ersetzen
 6. [x] Räume aus Supabase laden
-7. [ ] Raumbeitritte speichern
-8. [ ] Chat mit Supabase Realtime anbinden
+7. [x] Raumbeitritte speichern
+8. [x] Chat mit Supabase Realtime anbinden
 9. [ ] Blockieren und Melden ergänzen (spätere Phase)
 10. [ ] LiveKit integrieren
 
-### Start mit Punkt 1
+### Supabase-Hinweise
 
 1. Öffne [supabase.com](https://supabase.com) und melde dich an oder erstelle ein Konto.
 2. Wähle im Dashboard **New project**.
@@ -36,7 +36,7 @@ Hinweis zur Berechtigung: Zusätzlich zu RLS benötigt PostgreSQL Tabellenrechte
 
 Für angemeldete Nutzer muss zusätzlich `supabase/migrations/006_rooms_authenticated_grant.sql` ausgeführt werden. Sie gibt `authenticated` ausschließlich Leserechte auf `rooms`.
 
-### Punkt 2: Lokale Umgebung
+### Lokale Umgebung
 
 - [x] `.env.example` als sichere Variablenvorlage angelegt
 - [ ] `.env.example` lokal nach `.env.local` kopieren
@@ -46,26 +46,13 @@ Für angemeldete Nutzer muss zusätzlich `supabase/migrations/006_rooms_authenti
 
 Für den ersten geschlossenen Test verwenden wir ein Supabase-Projekt für Entwicklung und Test. Sobald produktive Daten hinzukommen, wird ein separates Produktionsprojekt angelegt. Die echte `.env.local` bleibt ausschließlich auf deinem Rechner; nur `.env.example` darf ins Repository.
 
-### Punkt 4: Migration ausführen
+### Supabase-Migrationen
 
-Die Migration liegt unter `supabase/migrations/001_profiles.sql`. Führe sie so aus:
+Die Projektmigrationen liegen in `supabase/migrations/`. Sie wurden im Supabase SQL Editor ausgeführt; Raumbeitritte werden mit `left_at` historisiert und Chatnachrichten laufen über Supabase Realtime.
 
-1. Öffne im Supabase-Dashboard den **SQL Editor**.
-2. Wähle **New query**.
-3. Öffne die lokale Datei `supabase/migrations/001_profiles.sql` und kopiere ihren vollständigen Inhalt in den SQL Editor.
-4. Klicke auf **Run**.
-5. Prüfe unter **Table Editor**, ob `public.profiles` vorhanden ist.
-6. Prüfe unter **Authentication → Users**, ob ein Testkonto angelegt werden kann.
+### Optionales Instagram-Profil
 
-Die Migration aktiviert Row-Level Security, erlaubt authentifizierten Nutzern das Lesen von Profilen und beschränkt Anlegen bzw. Ändern auf das jeweils eigene Profil. Neue Auth-Nutzer erhalten automatisch ein Profil aus den Registrierungsdaten. Punkt 4 wird erst nach erfolgreicher Ausführung im Dashboard mit `[x]` markiert.
-
-### Punkt 7: Raumbeitritte
-
-Die Migration `supabase/migrations/005_room_members.sql` legt `room_members` an und gibt authentifizierten Nutzern Rechte für ihre eigenen Beitritte. Führe sie im Supabase SQL Editor aus. Danach kann ein angemeldeter Nutzer beim Betreten eines Raums als Zuschauer gespeichert werden; beim Verlassen wird `left_at` gesetzt. Nicht angemeldete Besucher bleiben im lokalen Demo-Modus.
-
-### Punkt 8: Chat mit Supabase Realtime
-
-Die Migration `supabase/migrations/008_messages.sql` legt `messages` an, aktiviert RLS und registriert die Tabelle für Supabase Realtime. Führe sie im Supabase SQL Editor aus. Danach werden Chatnachrichten für aktive Raumteilnehmer geladen, gespeichert und live an weitere Teilnehmer verteilt. Nicht angemeldete Besucher können weiterhin nur den lokalen Demo-Raum sehen.
+Die Migration `supabase/migrations/009_profile_instagram_handle.sql` ergänzt `profiles.instagram_handle`. Nach Ausführung im Supabase SQL Editor können Nutzer bei der Registrierung optional einen Handle eintragen und ihn später im Profil bearbeiten. Gespeichert wird nur der Handle, ohne `@`; Passwörter oder vollständige URLs werden nicht angenommen.
 
 ### LiveKit-Konfiguration
 
@@ -80,17 +67,43 @@ LIVEKIT_API_SECRET=dein-api-secret
 Die Werte gehören zusätzlich in Vercel unter **Settings → Environment Variables** für Preview und Production. `LIVEKIT_API_SECRET` darf niemals mit `NEXT_PUBLIC_` beginnen.
 
 LiveKit-Einrichtung:
-- [x] LiveKit-Cloud-Projekt angelegt
-- [x] Server-URL im Dashboard gefunden
-- [ ] Server-URL in `.env.local` eintragen
-- [ ] API-Key und API-Secret im LiveKit-Dashboard erstellen und lokal eintragen
-- [ ] Dieselben drei Variablen in Vercel für Preview und Production setzen
-- [x] Serverseitigen Token-Endpunkt implementieren; er prüft Login und aktiven Raumbeitritt
-- [x] Browser-Client und Video-Grid implementieren; Kamera und Mikrofon starten aus
-- [ ] Credentials lokal und in Vercel testen, danach Zwei-Nutzer-Test durchführen
+- [x] LiveKit-Cloud-Projekt angelegt und Server-URL ermittelt
+- [x] Serverseitigen Token-Endpunkt implementiert; er prüft Login und aktiven Raumbeitritt
+- [x] Browser-Client und Video-Grid implementiert; Kamera und Mikrofon starten aus
+- [ ] Geheimnisse rotieren, weil das API-Secret im Chat offengelegt wurde
+- [ ] Rotierte Variablen sicher lokal und in Vercel für Preview und Production setzen
+- [ ] Zwei-Nutzer-Test durchführen und Kamera/Mikrofon in unterstützten Browsern prüfen
 
-Die lokalen Variablen stehen bereits leer in `.env.local`. Fülle sie dort direkt im Editor aus. Im LiveKit-Dashboard findest du den API-Key und das Secret in den Projekt-Einstellungen unter **Keys**. Hinterlege dieselben Namen in Vercel unter **Settings → Environment Variables** für Preview und Production und löse danach einen Redeploy aus. Das API-Secret niemals in den Chat oder in Git einfügen.
+Die Variablen stehen in `.env.local` und `.env.example`. Das API-Secret wurde im Chat offengelegt: LiveKit-Dashboard → **Keys**: kompromittierten Key widerrufen, neuen Key/Secret erstellen, lokal und in Vercel hinterlegen, dann redeployen. Das Secret niemals in den Chat oder ins Git-Repository übernehmen.
 
 ### Zurückgestellt
 
 Punkt 9 (Blockieren und Melden) wird zunächst zurückgestellt. Er wird vor einem öffentlichen Betrieb benötigt und in einer späteren Phase als eigenes Moderations- und Sicherheitskonzept umgesetzt.
+
+## Nächste Produktphase: 200 Tester in drei Wochen
+
+### Reihenfolge der Ideen
+
+1. **Anmeldung vereinfachen** – zuerst Registrierung, Fehlermeldungen und Bestätigungsmails auf Mobilgeräten testen; unnötige Felder vermeiden.
+2. **Raumbeitritt vereinfachen** – klarer Weg von Startseite → Raum → Beitritt, verständliche Gast-/Login-Zustände und sichtbare Kamera-/Mikrofonkontrolle.
+3. **Geschlossener Test mit 20 Personen** – vor größerer Werbung den Kernablauf beobachten und kritische Fehler beheben.
+4. **Instagram-Rekrutierung auf 200 Tester ausweiten** – klare Landingpage, kurze Demo und ein eindeutiger Tester-Aufruf.
+5. **Verlosung optional** – erst nach Prüfung der Teilnahmebedingungen, Datenschutzangaben und Instagram-Vorgaben. Sie sollte freiwillig sein und nicht die einzige Motivation sein.
+6. **Premium-Räume, Newsfeed und gebrandeter Dropshipping-Shop zurückstellen** – erst nach Validierung von Wiederkehr und Nutzung priorisieren.
+
+### Drei-Wochen-Plan
+
+- **Woche 1 – Stabilität und Onboarding:** LiveKit-Secrets rotieren; testen, dass Anmeldung, Raumbeitritt, Chat, Kamera und Verlassen auf Desktop und Mobilgerät funktionieren. Gespräche mit 5–10 Zielgruppenmitgliedern führen. Anmeldung/Beitritt vereinfachen.
+- **Woche 2 – geschlossener Pilot:** 20–30 Tester einladen. Sitzungen beobachten, Fehler und Abbrüche dokumentieren. Entscheiden, ob Räume und Video für neue Nutzer selbsterklärend sind. Danach kritische Probleme beheben.
+- **Woche 3 – Instagram-Aufruf:** Landingpage und Demo-Clip veröffentlichen, Partnerschaften mit Strick-Accounts/Communities anfragen und Einladungen schrittweise versenden. Ziel: 200 qualifizierte Anmeldungen; getrennt messen, wie viele sich tatsächlich einloggen und an einer Session teilnehmen.
+
+### Messgrößen
+
+- 200 abgeschlossene Tester-Anmeldungen (Zielgröße, keine Garantie)
+- Anteil, der die erste Anmeldung abschließt
+- Anteil der Angemeldeten, die einem Raum beitreten
+- Anteil, die Kamera oder Chat tatsächlich verwenden
+- zweite Session innerhalb von sieben Tagen
+- technische Fehler, Abbrüche und Supportanfragen
+
+**Empfehlung:** Der nächste sinnvolle Schritt ist nicht der Newsfeed oder Shop, sondern ein durchgängiger mobiler Test des Anmelde- und Raumbeitritts mit einer kleinen Pilotgruppe. Damit vermeiden wir, 200 Personen in einen Ablauf einzuladen, der noch Reibung oder LiveKit-Probleme hat.
