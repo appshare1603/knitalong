@@ -76,6 +76,59 @@ LiveKit-Einrichtung:
 
 Die Variablen stehen in `.env.local` und `.env.example`. Das API-Secret wurde im Chat offengelegt: LiveKit-Dashboard → **Keys**: kompromittierten Key widerrufen, neuen Key/Secret erstellen, lokal und in Vercel hinterlegen, dann redeployen. Das Secret niemals in den Chat oder ins Git-Repository übernehmen.
 
+### User-Verwaltung und Visualisierung der angemeldeten Benutzer
+
+#### Umsetzungsplan
+
+1. **Profilfelder und Darstellung festlegen**
+	- Migration für Vorname, Nachname und Experience Level ergänzen.
+	- Experience Level auf drei UI-Ausprägungen abbilden: Beginner, etwas Erfahrung, viel Erfahrung.
+	- Optionales Profilbild ergänzen; ohne Upload wird ein Initialen-Avatar angezeigt.
+	- Rollenfeld ergänzen: Standardrolle `Visitor`; Rolle `Admin` wird ausschließlich direkt über Supabase vergeben.
+	- E-Mail bleibt in Supabase Auth; Änderungen erfolgen über `auth.updateUser()` mit erforderlicher Bestätigung.
+	- Instagram-Handle bleibt optional.
+2. **Profilseite ergänzen**
+	- Angemeldete Nutzer können erlaubte Profilfelder bearbeiten.
+	- Profilbild auswählen, Vorschau anzeigen, ersetzen und wieder entfernen können.
+	- Upload auf erlaubte Bildformate und Dateigröße begrenzen; Bild vor dem Upload verkleinern und Metadaten/EXIF entfernen.
+	- Bild in Supabase Storage unter einem nutzereigenen Pfad speichern; RLS/Storage-Policies erlauben Änderungen nur dem Eigentümer.
+	- `avatar_url` beziehungsweise den Storage-Pfad im Profil aktualisieren; bei Löschen die Datei entfernen und zum Initialen-Avatar zurückkehren.
+	- Eingaben validieren und Speichern/Fehlerzustände deutlich anzeigen.
+	- E-Mail-Adresse nicht öffentlich darstellen.
+	- Rolle anzeigen, aber nicht im Nutzerformular bearbeitbar machen.
+3. **Anmeldebutton global zustandsabhängig machen**
+	- Ausgeloggt: „Anmelden“.
+	- Eingeloggt: „Abmelden“; bei Klick Supabase-Session beenden.
+	- Den Auth-Status zentral bereitstellen, damit Navigation und Seiten denselben Zustand verwenden.
+4. **Online-Anwesenheit einführen**
+	- Supabase Realtime Presence für aktive Sessions verwenden; nicht alle registrierten Konten als „online“ anzeigen.
+	- Presence-Eintrag auf Profil-ID, Avatar-URL und freigegebenen Anzeigenamen beschränken; E-Mail und private Stammdaten nie übertragen.
+	- Beim Verlassen/Verbindungsabbruch Presence bereinigen und die Avatare auf der Startseite daraus rendern.
+5. **Inaktivitäts-Warnung umsetzen**
+	- Nach 60 Minuten ohne Aktivität einen StillAlive-Dialog mit 5-Minuten-Countdown anzeigen.
+	- Bestätigung setzt den Aktivitätstimer zurück.
+	- Ohne Bestätigung lokal abmelden und den Nutzer zurück zur Anmeldung führen.
+	- Beim Zurückkehren in einen inaktiven Tab die verstrichene Zeit prüfen; Browser können Timer im Hintergrund verzögern.
+6. **Tests und Rollout**
+	- Profiländerungen, E-Mail-Bestätigung, Login/Logout und parallele Tabs testen.
+	- Prüfen, dass neue Nutzer automatisch `Visitor` erhalten und Nutzer ihre eigene Rolle nicht ändern können.
+	- `Admin`-Zuweisung über Supabase testen; Admin-Berechtigungen serverseitig anhand des gespeicherten Rollenwerts prüfen.
+	- Avatar-Upload, ungültiges Format/zu große Datei, Ersetzen, Löschen und fehlendes Bild testen.
+	- Presence mit zwei Browsern prüfen: Avatare erscheinen nach Login und verschwinden nach Logout/Timeout.
+	- Timeout mit verkürzter Testdauer prüfen, danach 60 Minuten/5 Minuten aktivieren.
+	- Vor einem öffentlichen Launch Datenschutzhinweise für sichtbare Online-Avatare ergänzen.
+
+#### Festgelegte Profiltrennung
+
+- `display_name` bleibt der separate, öffentliche und nicht bearbeitbare KnitAlong-Name.
+- Vorname und Nachname sind optionale, private und vom Nutzer bearbeitbare Stammdaten.
+- Vorname und Nachname werden weder in der Online-Liste noch in öffentlichen Profilen angezeigt.
+- Die öffentliche Benutzerliste verwendet ausschließlich den freigegebenen `display_name` und Avatar.
+- Neue Konten erhalten die Rolle `Visitor` als Standard.
+- `Admin` wird ausschließlich manuell in Supabase gesetzt; Nutzer können ihre Rolle nicht selbst ändern.
+- Der Umfang der Admin-Funktionen wird später festgelegt; bis dahin keine zusätzlichen Admin-Aktionen freischalten.
+
+
 ### Zurückgestellt
 
 Punkt 9 (Blockieren und Melden) wird zunächst zurückgestellt. Er wird vor einem öffentlichen Betrieb benötigt und in einer späteren Phase als eigenes Moderations- und Sicherheitskonzept umgesetzt.

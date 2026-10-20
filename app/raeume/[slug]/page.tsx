@@ -1,5 +1,6 @@
 import Link from "next/link";
 import RoomExperience from "./RoomExperience";
+import SiteHeader from "@/components/SiteHeader";
 
 const rooms: Record<string, { title: string; detail: string; people: string; accent: string }> = {
   "leise-maschen": { title: "Leise Maschen am Abend", detail: "Gemeinsam stricken, wenig reden", people: "4 aktiv · 11 dabei", accent: "sage" },
@@ -13,10 +14,7 @@ export default async function RoomPage({ params }: { params: Promise<{ slug: str
 
   return (
     <main className="room-page">
-      <nav className="topbar" aria-label="Hauptnavigation">
-        <Link className="brand" href="/" aria-label="KnitAlong Startseite"><span className="brand-mark" aria-hidden="true">K</span><span>KnitAlong</span></Link>
-        <Link className="nav-login" href="/">Zur Übersicht</Link>
-      </nav>
+      <SiteHeader />
       <section className="room-stage">
         <div className={`room-stage-art ${room.accent}`}><div className="stage-ball" /><div className="stage-needle" /></div>
         <div className="room-stage-copy">
