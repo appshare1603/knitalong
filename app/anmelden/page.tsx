@@ -114,7 +114,7 @@ export default function SignInPage() {
       setLoading(true);
       try {
         const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: `${window.location.origin}/kennwort-zuruecksetzen`,
+          redirectTo: "https://knitalong.vercel.app/kennwort-zuruecksetzen",
         });
         if (recoveryError) {
           setError("Die Anfrage konnte nicht verarbeitet werden. Bitte versuche es später erneut.");

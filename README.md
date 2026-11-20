@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Kennwort-Wiederherstellung
 
-Unter **Authentication → URL Configuration** im Supabase-Dashboard muss die jeweilige Rücksprungadresse in den erlaubten Redirect-URLs stehen, z. B. `http://localhost:3000/kennwort-zuruecksetzen` für die lokale Entwicklung und die entsprechende HTTPS-Adresse für jede veröffentlichte Umgebung. Die Site URL und der E-Mail-Versand müssen ebenfalls passend eingerichtet sein. Die Supabase-E-Mail-Vorlage für die Kennwort-Wiederherstellung muss den Bestätigungslink (`{{ .ConfirmationURL }}`) enthalten.
+Die Kennwort-Wiederherstellung führt auch bei einer lokalen Anfrage zur Vercel-App unter `https://knitalong.vercel.app/kennwort-zuruecksetzen`. Diese vollständige Adresse muss im Supabase-Dashboard unter **Authentication → URL Configuration → Redirect URLs** erlaubt sein. Setze dort außerdem die **Site URL** auf `https://knitalong.vercel.app` und richte den E-Mail-Versand ein. Die Supabase-E-Mail-Vorlage für die Kennwort-Wiederherstellung muss den Bestätigungslink (`{{ .ConfirmationURL }}`) enthalten. Nach Änderungen muss ein neuer Link angefordert werden; bereits versendete Links behalten ihre bisherige Rücksprungadresse.
 
 Der Link führt zu einem Formular für ein neues Kennwort; das bisherige Kennwort bleibt bis zur erfolgreichen Änderung gültig. Supabase verschickt und prüft den zeitlich begrenzten Link. Keine Kennwörter werden per E-Mail verschickt. Wird der Link in einem Browser mit bestehender Sitzung geöffnet, zeigt das Formular ausdrücklich an, für welches Konto das Kennwort geändert wird.
 
