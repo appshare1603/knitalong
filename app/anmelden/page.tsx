@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase/client";
 import SiteHeader from "@/components/SiteHeader";
 import { useAuth } from "@/components/AuthProvider";
 
-type AuthMode = "signup" | "signin";
+type AuthMode = "signup" | "signin" | "recovery";
 type Profile = { id: string; display_name: string; language: string; age_confirmed: boolean; instagram_handle: string | null; avatar_url: string | null; experience_level: string | null; role: "Visitor" | "Admin" };
 
 export default function SignInPage() {
@@ -109,6 +109,25 @@ export default function SignInPage() {
     event.preventDefault();
     setError("");
     setMessage("");
+
+    if (mode === "recovery") {
+      setLoading(true);
+      try {
+        const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/kennwort-zuruecksetzen`,
+        });
+        if (recoveryError) {
+          setError("Die Anfrage konnte nicht verarbeitet werden. Bitte versuche es später erneut.");
+        } else {
+          setMessage("Falls ein Konto mit dieser E-Mail-Adresse existiert, erhältst du einen Link zum Zurücksetzen deines Kennworts.");
+        }
+      } catch {
+        setError("Die Anfrage konnte nicht verarbeitet werden. Bitte versuche es später erneut.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
 
     if (mode === "signup" && !isAdult) {
       setError("Bitte bestätige, dass du mindestens 16 Jahre alt bist.");
@@ -270,16 +289,18 @@ export default function SignInPage() {
           <form className="instagram-profile-form" onSubmit={saveInstagramHandle}><label htmlFor="instagram-handle">Instagram-Profil (optional)</label><input id="instagram-handle" name="instagram_handle" value={instagramHandle} onChange={(event) => setInstagramHandle(event.target.value)} placeholder="@deinprofil" maxLength={31} autoComplete="off" /><p className="form-note">Nur dein Nutzername; kein Passwort oder vollständiger Link.</p>{instagramMessage && <p className="form-message" role="status">{instagramMessage}</p>}<button className="button button-dark button-wide" type="submit" disabled={savingInstagram}>{savingInstagram ? "Wird gespeichert …" : "Instagram-Profil speichern"}</button></form>
           <form className="instagram-profile-form" onSubmit={updateEmail}><label htmlFor="new-email">E-Mail-Adresse ändern</label><input id="new-email" type="email" value={newEmail} onChange={(event) => setNewEmail(event.target.value)} autoComplete="email" required /><p className="form-note">Die neue Adresse wird erst nach Bestätigung wirksam.</p>{emailMessage && <p className="form-message" role="status">{emailMessage}</p>}<button className="button button-dark button-wide" type="submit">Bestätigungslink senden</button></form>
           <Link className="button button-dark button-wide" href="/raeume/leise-maschen">Zum Raum <span aria-hidden="true">↗</span></Link><button className="mode-toggle" type="button" onClick={signOut}>Abmelden</button></section> : <form className="auth-form" onSubmit={handleSubmit}>
-          <div className="form-heading"><span className="form-step">01 / 01</span><h2>{mode === "signup" ? "Konto erstellen" : "Willkommen zurück"}</h2></div>
+          <div className="form-heading"><span className="form-step">01 / 01</span><h2>{mode === "signup" ? "Konto erstellen" : mode === "recovery" ? "Kennwort vergessen" : "Willkommen zurück"}</h2></div>
           {mode === "signup" && <><label htmlFor="name">Wie dürfen wir dich nennen?</label><input id="name" name="name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Dein Anzeigename" autoComplete="nickname" required /></>}
           {mode === "signup" && <><label htmlFor="signup-instagram">Instagram-Profil (optional)</label><input id="signup-instagram" name="instagram_handle" value={instagramHandle} onChange={(event) => setInstagramHandle(event.target.value)} placeholder="@deinprofil" maxLength={31} autoComplete="off" /><p className="form-note instagram-hint">Nur dein Nutzername, z. B. @maschenliebe. Kein Passwort oder vollständiger Link.</p></>}
           <label htmlFor="email">E-Mail-Adresse</label><input id="email" name="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="du@beispiel.de" autoComplete="email" required />
-          <label htmlFor="password">Passwort</label><div className="password-field"><input id="password" name="password" type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Mindestens 6 Zeichen" minLength={6} autoComplete={mode === "signup" ? "new-password" : "current-password"} required /><button className="password-toggle" type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? "Passwort verbergen" : "Passwort anzeigen"} aria-pressed={showPassword}>{showPassword ? "Verbergen" : "Anzeigen"}</button></div>
+          {mode !== "recovery" && <><label htmlFor="password">Passwort</label><div className="password-field"><input id="password" name="password" type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Mindestens 6 Zeichen" minLength={6} autoComplete={mode === "signup" ? "new-password" : "current-password"} required /><button className="password-toggle" type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? "Passwort verbergen" : "Passwort anzeigen"} aria-pressed={showPassword}>{showPassword ? "Verbergen" : "Anzeigen"}</button></div></>}
+          {mode === "signin" && <button className="forgot-password" type="button" onClick={() => { setMode("recovery"); setPassword(""); setError(""); setMessage(""); }}>Kennwort vergessen?</button>}
+          {mode === "recovery" && <p className="form-note recovery-note">Gib deine E-Mail-Adresse ein. Du erhältst einen Link, mit dem du ein neues Kennwort festlegen kannst.</p>}
           {mode === "signup" && <label className="check-row"><input type="checkbox" checked={isAdult} onChange={(event) => setIsAdult(event.target.checked)} required /><span>Ich bin mindestens 16 Jahre alt.</span></label>}
           {error && <p className="form-message form-error" role="alert">{error}</p>}
           {message && <p className="form-message form-success" role="status">{message}</p>}
-          <button className="button button-dark button-wide" type="submit" disabled={loading}>{loading ? "Wird verarbeitet ..." : mode === "signup" ? "Konto erstellen" : "Anmelden"} <span aria-hidden="true">↗</span></button>
-          <button className="mode-toggle" type="button" onClick={() => { setMode(mode === "signup" ? "signin" : "signup"); setError(""); setMessage(""); }}>{mode === "signup" ? "Ich habe bereits ein Konto" : "Neues Konto erstellen"}</button>
+          <button className="button button-dark button-wide" type="submit" disabled={loading}>{loading ? "Wird verarbeitet ..." : mode === "signup" ? "Konto erstellen" : mode === "recovery" ? "Link senden" : "Anmelden"} <span aria-hidden="true">↗</span></button>
+          <button className="mode-toggle" type="button" disabled={loading} onClick={() => { setMode(mode === "signup" || mode === "recovery" ? "signin" : "signup"); setError(""); setMessage(""); }}>{mode === "signup" ? "Ich habe bereits ein Konto" : mode === "recovery" ? "Zurück zur Anmeldung" : "Neues Konto erstellen"}</button>
           <p className="form-note">Deine Zugangsdaten werden direkt von Supabase verarbeitet. KnitAlong speichert kein Passwort.</p>
         </form>}
       </section>
